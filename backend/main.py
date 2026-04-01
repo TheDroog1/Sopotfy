@@ -3,7 +3,6 @@ import asyncio
 from typing import List
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
-from youtubesearchpython import VideosSearch
 import yt_dlp
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -91,13 +90,35 @@ def process_download(video_id: str):
 @app.get("/search")
 async def search(q: str):
     """
-    Search YouTube for videos based on the query.
+    Search YouTube using yt-dlp (more stable than other libs).
     """
     try:
-        videos_search = VideosSearch(q, limit=10)
-        results = videos_search.result()
-        return results
+        ydl_opts = {
+            'quiet': True,
+            'extract_flat': 'in_playlist',
+            'skip_download': True,
+            'force_generic_extractor': False,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            # ytsearch10:query searches for 10 results
+            info = ydl.extract_info(f"ytsearch10:{q}", download=False)
+            
+            # Reformat to match what we expected (id, title, thumbnail)
+            entries = info.get('entries', [])
+            results = []
+            for entry in entries:
+                if entry:
+                    results.append({
+                        "id": entry.get("id"),
+                        "title": entry.get("title"),
+                        "thumbnails": [{"url": f"https://i.ytimg.com/vi/{entry.get('id')}/hqdefault.jpg"}],
+                        "channel": {"name": entry.get("uploader")},
+                        "url": entry.get("url")
+                    })
+            
+            return {"result": results}
     except Exception as e:
+        print(f"Search Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/download")
