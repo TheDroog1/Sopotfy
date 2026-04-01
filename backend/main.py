@@ -32,6 +32,7 @@ app.add_middleware(
 
 class DownloadRequest(BaseModel):
     video_id: str
+    title: str = "Unknown Track"
 
 def process_download(video_id: str):
     """
@@ -143,7 +144,8 @@ async def download(request: DownloadRequest, background_tasks: BackgroundTasks):
     try:
         supabase.table("downloads").upsert({
             "video_id": request.video_id,
-            "status": "processing"
+            "status": "processing",
+            "title": request.title
         }).execute()
     except Exception as e:
         print(f"Warning: Failed to create initial download record: {str(e)}")

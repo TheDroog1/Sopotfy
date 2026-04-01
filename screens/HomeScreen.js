@@ -17,7 +17,7 @@ import { Download, CheckCircle, Music2 } from 'lucide-react-native';
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://sopotfy.onrender.com';
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,18 +102,14 @@ const HomeScreen = () => {
     setDownloadingIds(prev => new Set(prev).add(videoId));
     
     try {
-      // a. Crea record 'pending' su Supabase
-      await supabase.table('downloads').upsert({
-        video_id: videoId,
-        status: 'pending',
-        title: item.title
-      });
-
-      // b. Invia richiesta di download al backend
+      // b. Invia richiesta di download al backend (lì verrà creato il record 'processing')
       const response = await fetch(`${BACKEND_URL}/download`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_id: videoId })
+        body: JSON.stringify({ 
+          video_id: videoId,
+          title: item.title
+        })
       });
 
       if (!response.ok) throw new Error('Errore backend');
