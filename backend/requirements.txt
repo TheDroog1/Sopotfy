@@ -1,8 +1,8 @@
 fastapi
 uvicorn
-yt-dlp
+# Installa la versione "di stamattina" di yt-dlp per risolvere i bug più freschi
+git+https://github.com/yt-dlp/yt-dlp.git@master
 supabase
 python-dotenv
 aiohttp
 python-multipart
-# Let supabase handle httpx internally
