@@ -17,7 +17,7 @@ import { Download, CheckCircle, Music2 } from 'lucide-react-native';
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://sopotfy.onrender.com';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://sopotfy-sossio.loca.lt';
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,7 +79,11 @@ const HomeScreen = () => {
     if (!query) return;
     setIsLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`${BACKEND_URL}/search?q=${encodeURIComponent(query)}`, {
+        headers: {
+          'Bypass-Tunnel-Reminder': 'true'
+        }
+      });
       const data = await response.json();
       setResults(data.result || []);
     } catch (error) {
@@ -105,7 +109,10 @@ const HomeScreen = () => {
       // b. Invia richiesta di download al backend (lì verrà creato il record 'processing')
       const response = await fetch(`${BACKEND_URL}/download`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Bypass-Tunnel-Reminder': 'true'
+        },
         body: JSON.stringify({ 
           video_id: videoId,
           title: item.title
