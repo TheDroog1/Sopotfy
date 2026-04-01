@@ -1,15 +1,4 @@
-INFO:     Started server process [62750]
+INFO:     Started server process [76724]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)
-[STARTUP] Checking Supabase URL: LOADED
-[STARTUP] Checking Supabase KEY: LOADED
-[STARTUP] Supabase client initialized successfully.
-INFO:     127.0.0.1:56456 - "POST /download HTTP/1.1" 200 OK
-[download]   0.0% of    7.09MiB at   44.69KiB/s ETA 02:42[DOWNLOAD] Phase 1: Trying Android client for KU0osh6SwWE...
-[download]   0.0% of    7.09MiB at  126.34KiB/s ETA 00:57[download]   0.1% of    7.09MiB at  284.98KiB/s ETA 00:25[download]   0.2% of    7.09MiB at  593.78KiB/s ETA 00:12[download]   0.4% of    7.09MiB at    1.16MiB/s ETA 00:06[download]   0.9% of    7.09MiB at    1.44MiB/s ETA 00:04[download]   1.7% of    7.09MiB at    1.82MiB/s ETA 00:03[download]   3.5% of    7.09MiB at    2.82MiB/s ETA 00:02[download]   7.0% of    7.09MiB at    4.08MiB/s ETA 00:01[download]  14.1% of    7.09MiB at    6.67MiB/s ETA 00:00[download]  28.2% of    7.09MiB at    8.41MiB/s ETA 00:00[download]  56.4% of    7.09MiB at    1.27MiB/s ETA 00:02[download]  70.5% of    7.09MiB at    1.57MiB/s ETA 00:01[download]  98.7% of    7.09MiB at  885.09KiB/s ETA 00:00[download] 100.0% of    7.09MiB at  874.63KiB/s ETA 00:00[download] 100% of    7.09MiB in 00:00:08 at 840.28KiB/s                                                         INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [62750]
-[DOWNLOAD] Phase 1 success for KU0osh6SwWE!
-[UPLOAD ERROR] KU0osh6SwWE: {'message': "Could not find the 'storage_url' column of 'downloads' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}

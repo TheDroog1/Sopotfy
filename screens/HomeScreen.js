@@ -17,7 +17,7 @@ import { Download, CheckCircle, Music2 } from 'lucide-react-native';
 import * as FileSystem from 'expo-file-system';
 import { StatusBar } from 'expo-status-bar';
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://sopotfy-sossio.loca.lt';
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://absent-lafayette-skills-mineral.trycloudflare.com';
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');

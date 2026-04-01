@@ -1,31 +1,31 @@
 #!/bin/bash
 # ==========================================
-# AVVIO SERVER SOPOTFY LOCALE + TUNNEL
+# AVVIO SERVER SOPOTFY LOCALE + CLOUDFLARE
 # ==========================================
 
-echo "🚀 [1/3] Installazione/Verifica dipendenze FastAPI..."
-cd backend
-python3 -m pip install -r requirements.txt &> /dev/null
+echo "🚀 [1/3] Pulizia processi precedenti..."
+pkill -9 -f uvicorn 2>/dev/null
+pkill -f cloudflared 2>/dev/null
 
-echo "🚀 [2/3] Avvio di Sopotfy Server (Log salvati in backend/server.log)..."
-# Avvia fastapi in background e salva i log in un file
+echo "🚀 [2/3] Avvio di Sopotfy Turbo (Log: backend/server.log)..."
+cd backend
+# Avvia fastapi con il motore Turbo Homebrew
 uvicorn main:app --host 0.0.0.0 --port 10000 > server.log 2>&1 &
 SERVER_PID=$!
 
-echo "⏳ Attendo 3 secondi per il riscaldamento del server..."
+echo "⏳ Attendo il riscaldamento del server..."
 sleep 3
 
-echo "🌐 [3/3] Avvio Tunnel Localtunnel (Inoltro al Cellulare)..."
+echo "🌐 [3/3] Avvio Tunnel Cloudflare (Ponte Diretto Telefono)..."
 echo "=========================================================="
-echo "⚠️  IMPORTANTE: Lascia aperta questa finestra del terminale!"
+echo "⚠️  IMPORTANTE: Lascia aperta questa finestra!"
 echo "❌  Per spegnere tutto premi: CTRL + C"
 echo "=========================================================="
 
-# Il parametro sopotfy-sossio fissa l'URL per non cambiarlo mai
-# Il parametro host bypassa i bug di connessione rifiutata
-npx localtunnel --port 10000 --subdomain sopotfy-sossio --host http://localtunnel.me
+# Avvia cloudflared e mostra l'URL all'utente
+cloudflared tunnel --url http://localhost:10000
 
 echo ""
 echo "🛑 Spegnimento del Server in corso..."
 kill $SERVER_PID
-echo "✅ Server spento con successo. A presto!"
+echo "✅ Sistemato. A presto!"
