@@ -43,7 +43,7 @@ def process_download(video_id: str):
         print("Error: Supabase client not initialized. Check your environment variables.")
         return
 
-    # yt-dlp configuration for audio extraction
+    # yt-dlp configuration for audio extraction mit stealth options
     output_filename = f"/tmp/{video_id}"
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -55,6 +55,14 @@ def process_download(video_id: str):
         }],
         'quiet': True,
         'no_warnings': True,
+        'nocheckcertificate': True,
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios'],
+                'skip': ['webpage', 'hls', 'dash']
+            }
+        },
     }
 
     try:
