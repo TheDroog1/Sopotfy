@@ -72,11 +72,14 @@ def process_download(video_id: str):
         'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'ios'],
-                'skip': ['webpage', 'hls', 'dash']
+                'player_client': ['ios'],
+                'player_skip': ['webpage', 'hls']
             }
         },
     }
+    
+    if os.path.exists('cookies.txt'):
+        ydl_opts['cookiefile'] = 'cookies.txt'
 
     try:
         # 1. Download and Extract
@@ -132,7 +135,19 @@ async def search(q: str):
             'extract_flat': 'in_playlist',
             'skip_download': True,
             'force_generic_extractor': False,
+            'nocheckcertificate': True,
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['ios'],
+                    'player_skip': ['webpage', 'hls']
+                }
+            },
         }
+        
+        if os.path.exists('cookies.txt'):
+            ydl_opts['cookiefile'] = 'cookies.txt'
+            
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             # ytsearch10:query searches for 10 results
             info = ydl.extract_info(f"ytsearch10:{q}", download=False)
