@@ -92,11 +92,13 @@ def process_download(video_id: str):
             os.remove(file_path)
             
     except Exception as e:
-        print(f"Bkg Task Error for {video_id}: {str(e)}")
+        error_msg = str(e)
+        print(f"Bkg Task Error for {video_id}: {error_msg}")
         try:
-            supabase.table("downloads").update({"status": "failed"}).eq("video_id", video_id).execute()
-        except:
-            pass
+            # We use an upsert-style update to the status column for direct debugging
+            supabase.table("downloads").update({"status": f"failed: {error_msg}"}).eq("video_id", video_id).execute()
+        except Exception as db_err:
+            print(f"CRITICAL: Failed to update DB status: {str(db_err)}")
 
 @app.get("/search")
 async def search(q: str):

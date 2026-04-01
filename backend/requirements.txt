@@ -5,3 +5,4 @@ supabase
 python-dotenv
 aiohttp
 python-multipart
+httpx==0.24.1
