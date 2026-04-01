@@ -1,11 +1,10 @@
 import os
 import subprocess
-import uuid
-import asyncio
 import json
+import asyncio
 import time
 import re
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
@@ -19,7 +18,6 @@ SUPABASE_KEY = (os.getenv("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
 BUCKET_NAME = "audio-downloads"
 
 supabase: Client = None
-
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -28,7 +26,6 @@ if SUPABASE_URL and SUPABASE_KEY:
         print(f"[STARTUP] Error during Supabase init: {str(e)}")
 
 app = FastAPI(title="Sopotfy API")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,21 +39,13 @@ class DownloadRequest(BaseModel):
     title: str = "Unknown Track"
 
 def broadcast_url_to_supabase():
-    """
-    Legge l'URL di Cloudflare dal file cf.txt e lo manda a Supabase
-    così l'app mobile può scoprirlo automaticamente!
-    """
     if not supabase: return
-    
     try:
-        # Attende che il tunnel sia pronto
-        time.sleep(10)
+        time.sleep(15) # Attesa per stabilizzazione Cloudflare
         cf_log_path = "cf.txt" if os.path.exists("cf.txt") else "backend/cf.txt"
-        
         if os.path.exists(cf_log_path):
             with open(cf_log_path, "r") as f:
                 content = f.read()
-                # Cerca l'URL nel log di cloudflare
                 match = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", content)
                 if match:
                     url = match.group(0)
@@ -64,11 +53,11 @@ def broadcast_url_to_supabase():
                     supabase.table("downloads").upsert({
                         "video_id": "BACKEND_URL",
                         "status": "config",
-                        "public_url": url,
-                        "title": f"Last Updated: {time.ctime()}"
+                        "file_url": url,
+                        "title": f"Live: {time.ctime()}"
                     }).execute()
     except Exception as e:
-        print(f"[SMART CONNECT] Errore trasmissione: {str(e)}")
+        print(f"[SMART CONNECT ERROR] {str(e)}")
 
 def run_yt_dlp_cli(video_id: str, output_path: str):
     yt_dlp_path = "/opt/homebrew/bin/yt-dlp" if os.path.exists("/opt/homebrew/bin/yt-dlp") else "yt-dlp"
@@ -80,14 +69,11 @@ def run_yt_dlp_cli(video_id: str, output_path: str):
         "--audio-format", "mp3",
         "--audio-quality", "192K",
         "--output", f"{output_path}.%(ext)s",
-        "--no-warnings",
-        "--quiet",
-        "--nocheck-certificate",
+        "--no-warnings", "--quiet", "--nocheck-certificate",
         "--remote-components", "ejs:github",
         f"https://www.youtube.com/watch?v={video_id}"
     ]
-    cmd = [c for c in cmd if c is not None]
-    subprocess.run(cmd, capture_output=True, text=True)
+    subprocess.run([c for c in cmd if c], capture_output=True, text=True)
 
 def process_download(video_id: str):
     if not supabase: return
@@ -102,12 +88,11 @@ def process_download(video_id: str):
                     break
         with open(final_mp3, "rb") as f:
             supabase.storage.from_(BUCKET_NAME).upload(
-                file=f,
-                path=f"{video_id}.mp3",
+                file=f, path=f"{video_id}.mp3",
                 file_options={"content-type": "audio/mpeg", "x-upsert": "true"}
             )
         storage_url = supabase.storage.from_(BUCKET_NAME).get_public_url(f"{video_id}.mp3")
-        supabase.table("downloads").update({"status": "completed", "public_url": storage_url}).eq("video_id", video_id).execute()
+        supabase.table("downloads").update({"status": "completed", "file_url": storage_url}).eq("video_id", video_id).execute()
     except Exception as e:
         supabase.table("downloads").update({"status": f"failed: {str(e)}"}).eq("video_id", video_id).execute()
     finally:
@@ -115,7 +100,6 @@ def process_download(video_id: str):
 
 @app.on_event("startup")
 async def startup_event():
-    # Avvia la trasmissione URL in background
     asyncio.create_task(asyncio.to_thread(broadcast_url_to_supabase))
 
 @app.get("/search")
@@ -124,15 +108,11 @@ async def search(q: str):
     cmd = [yt_dlp_path, "--quiet", "--extract-flat", "--dump-single-json", f"ytsearch10:{q}"]
     result = subprocess.run(cmd, capture_output=True, text=True)
     data = json.loads(result.stdout)
-    results = []
-    for entry in data.get('entries', []):
-        results.append({
-            "id": entry.get("id"),
-            "title": entry.get("title"),
-            "thumbnails": [{"url": f"https://i.ytimg.com/vi/{entry.get('id')}/hqdefault.jpg"}],
-            "channel": {"name": entry.get("uploader")}
-        })
-    return {"result": results}
+    return {"result": [{
+        "id": e.get("id"), "title": e.get("title"),
+        "thumbnails": [{"url": f"https://i.ytimg.com/vi/{e.get('id')}/hqdefault.jpg"}],
+        "channel": {"name": e.get("uploader")}
+    } for e in data.get('entries', []) if e]}
 
 @app.post("/download")
 async def download(request: DownloadRequest, background_tasks: BackgroundTasks):
@@ -141,4 +121,4 @@ async def download(request: DownloadRequest, background_tasks: BackgroundTasks):
     return {"status": "started"}
 
 @app.get("/")
-def read_root(): return {"status": "online", "message": "Smart Connect Active"}
+def read_root(): return {"status": "online", "message": "Sopotfy Turbo Smart Connect Ready"}

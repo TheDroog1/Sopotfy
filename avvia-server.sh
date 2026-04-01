@@ -22,10 +22,18 @@ echo "⚠️  IMPORTANTE: Lascia aperta questa finestra!"
 echo "❌  Per spegnere tutto premi: CTRL + C"
 echo "=========================================================="
 
-# Avvia cloudflared e mostra l'URL all'utente
-cloudflared tunnel --url http://localhost:10000
+# Avvia cloudflared in background, salva l'URL e lo mostra all'utente
+cloudflared tunnel --url http://localhost:10000 > cf.txt 2>&1 &
+CF_PID=$!
+
+echo "📡 Cloudflare in ascolto... l'app si collegherà tra 10 secondi."
+echo "🔗 Puoi anche monitorare l'URL qui: cat backend/cf.txt | grep trycloudflare"
+echo "=========================================================="
+
+# Mantieni lo script attivo
+wait $SERVER_PID $CF_PID
 
 echo ""
 echo "🛑 Spegnimento del Server in corso..."
-kill $SERVER_PID
+kill $SERVER_PID $CF_PID
 echo "✅ Sistemato. A presto!"
