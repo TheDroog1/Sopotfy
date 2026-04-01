@@ -2,6 +2,7 @@ import os
 import asyncio
 from typing import List
 from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import yt_dlp
 from supabase import create_client, Client
@@ -19,6 +20,15 @@ BUCKET_NAME = "audio-downloads"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
 app = FastAPI(title="Sopotfy API")
+
+# Add CORS middleware to allow connections from Expo Go and mobile apps
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In produzione puoi restringere questo alle origini ammesse
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class DownloadRequest(BaseModel):
     video_id: str
