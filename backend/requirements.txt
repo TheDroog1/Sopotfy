@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+yt-dlp
+supabase
+python-dotenv
+youtube-search-python
+aiohttp
+python-multipart
