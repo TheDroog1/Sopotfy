@@ -12,12 +12,25 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Config ---
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") # Service role for write access
+# Clean values from environment (remove potential hidden spaces/newlines)
+SUPABASE_URL = (os.getenv("SUPABASE_URL") or "").strip()
+SUPABASE_KEY = (os.getenv("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
 BUCKET_NAME = "audio-downloads"
 
-# Initialize Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
+# Initialize Supabase client with safety checks
+supabase: Client = None
+
+print(f"[STARTUP] Checking Supabase URL: {'LOADED' if SUPABASE_URL else 'MISSING'}")
+print(f"[STARTUP] Checking Supabase KEY: {'LOADED' if SUPABASE_KEY else 'MISSING'}")
+
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("[STARTUP] Supabase client initialized successfully.")
+    except Exception as e:
+        print(f"[STARTUP] CRITICAL ERROR during Supabase init: {str(e)}")
+else:
+    print("[STARTUP] WARNING: Supabase credentials not found in environment.")
 
 app = FastAPI(title="Sopotfy API")
 

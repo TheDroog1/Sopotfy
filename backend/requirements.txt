@@ -5,4 +5,4 @@ supabase
 python-dotenv
 aiohttp
 python-multipart
-httpx==0.24.1
+# Let supabase handle httpx internally
